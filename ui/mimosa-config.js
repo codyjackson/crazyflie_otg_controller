@@ -10,7 +10,7 @@ exports.config = {
     "live-reload",
     "bower",
     "less",
-    "handlebars"
+    "server-template-compile"
   ],
   "server": {
     "views": {

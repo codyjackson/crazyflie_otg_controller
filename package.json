@@ -1,0 +1,17 @@
+{
+  "name": "leader",
+  "version": "0.0.0",
+  "description": "Combining the CrazyFlie android project with my web project that tracks copter and controller yaw.",
+  "main": "none",
+  "dependencies": {
+    "execSync": "~1.0.1-pre",
+    "gulp": "~3.6.2",
+    "rimraf": "2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cody Jackson",
+  "license": "ISC"
+}

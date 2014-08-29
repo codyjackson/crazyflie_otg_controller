@@ -1,5 +1,5 @@
 {
-  "name": "ui",
+  "name": "webapp",
   "version": "0.0.1",
   "description": "A Mimosa starter skeleton",
   "dependencies": {
@@ -8,7 +8,6 @@
     "express": "3.4.7"
   },
   "devDependencies": {
-    "mimosa-less": "*",
-    "mimosa-handlebars": "*"
+    "mimosa-less": "*"
   }
 }
