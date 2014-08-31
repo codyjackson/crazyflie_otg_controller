@@ -10,14 +10,7 @@
       <script src="/javascripts/reload-client.js"></script>
     {{/reload}}
 
-    {{#optimize}}
-      <script src="/javascripts/main-built.js"></script>
-    {{/optimize}}
-
-    {{^optimize}}
-      <script src="/javascripts/vendor/requirejs/require.js" data-main="/javascripts/main.js"></script>
-    {{/optimize}}
-
+    <script src="/javascripts/bundle.js"></script>
   </head>
   <body>
 

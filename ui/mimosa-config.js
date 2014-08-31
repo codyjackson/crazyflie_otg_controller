@@ -2,9 +2,9 @@ exports.config = {
   "modules": [
     "copy",
     "server",
+    "browserify",
     "jshint",
     "csslint",
-    "require",
     "minify-js",
     "minify-css",
     "live-reload",
@@ -16,6 +16,20 @@ exports.config = {
     "views": {
       "compileWith": "handlebars",
       "extension": "hbs"
+    }
+  },
+  "browserify": {
+    "bundles": [
+      { 
+        "entries": ["javascripts/main.js"],
+        "outputFile": "bundle.js" 
+      }
+    ],
+    "shims": {
+      "jquery": {
+        "path": "javascripts/vendor/jquery/jquery",
+        "exports": "$"
+      }
     }
   }
 }
