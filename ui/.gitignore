@@ -52,3 +52,6 @@ what
 .tmproj
 nbproject
 Thumbs.db
+
+#ignore vendor files
+/assets/*/vendor/*
