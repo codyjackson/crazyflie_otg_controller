@@ -1,26 +1,55 @@
-@blue: #5B83AD;
-@yellow: #FFFFE0;
+@primary-blue: #00CBFD;
+@secondary-blue: #00B0C9;
+
+@primary-gray: #888;
+@secondary-gray: #EEE;
+
+@content-padding: 10px;
+@navbar-height: 50px;
+
+@subtle-background-color: #FAFAFA;
+
+
+.middle-aligner {
+  margin: auto;
+  display: table;
+  height: 40%
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
 
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  .navbar {
+      font-family: 'Leckerli One';
+      font-size: 30px !important;
+      color: #FFF;
+      text-shadow: 1px 1px @secondary-blue;
 
-  .template {
-    background-color: @yellow;
+      background-color: @primary-blue;
+      border-color: @secondary-blue;
+
+    .buttons i {
+      -webkit-transform: rotate(90deg);
+      -moz-transform: rotate(90deg);
+      -o-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+      transform: rotate(90deg);
+    }
+
+    .buttons {
+      margin-right: 15px;
+    }
+
+    .brand {
+      margin-left: 20px;
+    }
   }
 
-  .helper {
-    border:1px solid @blue;
-  }
-
-  .styled {
-    -webkit-transform: rotate(-30deg);
-    -moz-transform: rotate(-30deg);
-    -ms-transform: rotate(-30deg);
-    -o-transform: rotate(-30deg);
-    transform: rotate(-30deg);
-
-    margin-top: 100px;
-    position: absolute;
-  }
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  cursor: default;
 }

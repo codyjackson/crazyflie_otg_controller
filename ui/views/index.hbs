@@ -1,24 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html ng-controller="GlobalController">
   <head>
     <title>Mimosa</title>
 
-    <link rel="stylesheet" href="/stylesheets/style.css{{cachebust}}" />
+    <link rel="stylesheet" href="stylesheets/vendor/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" href="stylesheets/vendor/font-awesome/font-awesome.css" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+
 
     {{#reload}}
       <script src="/socket.io/socket.io.js"></script>
       <script src="/javascripts/reload-client.js"></script>
     {{/reload}}
 
-    <script src="/javascripts/bundle.js"></script>
+     <script src="/javascripts/bundle.js"></script>
+
   </head>
-  <body>
-
-    <p>Welcome to Mimosa</p>
-
-    {{#optimize}}
-    <p>Optimized mode.  You are getting a single RequireJS optimized JavaScript file which includes all the page dependencies.</p>
-    {{/optimize}}
-
+  <body ng-view screen-tap="onScreenTap()">
   </body>
 </html>

@@ -29,7 +29,14 @@ exports.config = {
       "jquery": {
         "path": "javascripts/vendor/jquery/jquery",
         "exports": "$"
+      },
+      "angular": {
+        "path": "javascripts/vendor/angular/angular",
+        "exports": "angular"
       }
+    },
+    "aliases": {
+      "angular-route": "javascripts/vendor/angular-route/angular-route"
     }
   }
 }
