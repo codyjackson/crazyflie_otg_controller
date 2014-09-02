@@ -1,55 +1,119 @@
-@primary-blue: #00CBFD;
-@secondary-blue: #00B0C9;
+@primary-blue: #483634;
+@secondary-blue: #141115;
 
 @primary-gray: #888;
 @secondary-gray: #EEE;
 
-@content-padding: 10px;
-@navbar-height: 50px;
+@base-font-size: 62.5%;
+@navbar-height: 22em;
 
-@subtle-background-color: #FAFAFA;
-
-
-.middle-aligner {
-  margin: auto;
-  display: table;
-  height: 40%
-}
-
-.middle {
-  display: table-cell;
-  vertical-align: middle;
+@font-face {
+    font-family: 'Leckerli One';
+    src: local('Leckerli One'), url('../fonts/LeckerliOne.ttf') format('opentype');
 }
 
 body {
-  .navbar {
-      font-family: 'Leckerli One';
-      font-size: 30px !important;
-      color: #FFF;
-      text-shadow: 1px 1px @secondary-blue;
-
-      background-color: @primary-blue;
-      border-color: @secondary-blue;
-
-    .buttons i {
-      -webkit-transform: rotate(90deg);
-      -moz-transform: rotate(90deg);
-      -o-transform: rotate(90deg);
-      -ms-transform: rotate(90deg);
-      transform: rotate(90deg);
-    }
-
-    .buttons {
-      margin-right: 15px;
-    }
-
-    .brand {
-      margin-left: 20px;
-    }
-  }
+  font-size: @base-font-size;
 
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   cursor: default;
+}
+
+img{
+  -webkit-user-drag: none; /* Prevents dragging of images/divs etc */
+  user-drag: none;
+}
+
+.directions {
+  color: @primary-gray;
+  font-size: 10em;
+  text-shadow: .05em .05em @secondary-gray;
+}
+
+div[bar] {
+  height: @navbar-height;
+}
+
+.navbar {
+  a, .brand {
+    font-family: 'Leckerli One';
+    color: #FFF;
+    text-shadow: 0.05em 0.05em @secondary-blue;
+  }
+
+  background-color: @primary-blue;
+  border-color: @secondary-blue;
+
+  height: @navbar-height;
+
+  .buttons i {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+
+    //margin-right: 0.3em;
+  }
+
+  .buttons {
+    font-size: 15em;
+    margin-right: 0.3em;
+  }
+
+  .brand {
+    font-size: 15em;
+    margin-left: 20px;
+  }
+}
+
+div[track] {
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  //background-color: @primary-gray;
+
+  // background-image: url('../images/track-bg.png');
+  // background-repeat: repeat-x;
+
+  .visual-track {
+    height: 3.5em;
+    width: 90%;
+    background-color: #1A1110;
+    position: absolute;
+    border: .4em solid #211817;
+    box-shadow: inset 1px -1px 10px 2px #000;
+    margin-left: 5%;
+    border-radius: 1em;
+  }
+
+  .visual-track:nth-of-type(1) {
+    top: 17.25em;
+  }
+
+  .visual-track:nth-of-type(2) {
+    top: 32.5em;
+  }
+
+  .visual-track:nth-of-type(3) {
+    top: 48.5em;
+  }
+
+  .visual-track:nth-of-type(4) {
+    top: 64.5em;
+  }
+
+  div[lever] {
+    position: relative;
+    left: 50em;
+    display: inline-block;
+  }
 }
