@@ -12,6 +12,7 @@ gulp.task('build', function(){
     process.chdir(paths.webapp);
     var mimosaBuildResults = execSync('mimosa build -o -P phone-build');
     console.log(mimosaBuildResults);
+    process.exit(0);
 });
 
 function replaceAllInFile(file, target, source) {
@@ -74,5 +75,14 @@ gulp.task('build-live-reload', function(){
         choices: getHosts()
     }, function(res){
         replaceAllInFile(paths.cordova + '/index.html', '{placeholderhost}', res.host);
+        process.exit(0);
     }));
+});
+
+gulp.task('build-backend', function(){
+    var pluginPath = process.cwd()+'\\radio';
+    console.log(execSync('cordova plugin remove radio'));
+    console.log(execSync('cordova plugin add ' + pluginPath));
+    console.log(execSync('cordova build android'));
+    process.exit(0);
 });
