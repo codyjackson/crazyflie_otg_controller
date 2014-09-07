@@ -3,8 +3,8 @@ var execSync = require('execSync').run;
 var fs = require('fs');
 
 var paths = {
-    'webapp': 'webapp',
-    'webapp-build': 'webapp/public',
+    'webapp': 'ui',
+    'webapp-build': 'ui/public',
     'cordova': 'www'
 };
 
