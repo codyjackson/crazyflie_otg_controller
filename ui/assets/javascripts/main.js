@@ -55,12 +55,12 @@ angular.module('application', ['ngRoute'])
         return {
             connect: function() {
                 var deferred = $q.defer();
-
+                test();
                 cordova.exec(function(){
                     deferred.resolve.apply(deferred, arguments);
                 }, function(){
                     deferred.reject.apply(deferred, arguments);
-                }, 'Radio', 'doesntmatter', []);
+                }, 'Radio', 'echo', ['hello']);
 
                 return deferred.promise;
             },
@@ -258,3 +258,7 @@ angular.module('application', ['ngRoute'])
         });
     });
 })();
+
+window.test = function() {
+    alert('hello foo');
+};

@@ -1,3 +1,5 @@
+package se.bitcraze.fluff;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -74,7 +76,7 @@ public class UsbLinkAndroid implements IUsbLink{
         }
 
         UsbDeviceConnection connection = mUsbManager.openDevice(mUsbDevice);
-        if (connection != null &amp;&amp; connection.claimInterface(mIntf, true)) {
+        if (connection != null && connection.claimInterface(mIntf, true)) {
             Log.d(LOG_TAG, "open SUCCESS");
             mConnection = connection;
         } else {
@@ -119,20 +121,20 @@ public class UsbLinkAndroid implements IUsbLink{
      */
     private static UsbDevice searchForCrazyradio(Context context, UsbManager usbManager) {
         UsbDevice device = null;
-        HashMap&lt;String, UsbDevice&gt; deviceList = usbManager.getDeviceList();
+        HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
         // Iterate over USB devices
-        for (Entry&lt;String, UsbDevice&gt; e : deviceList.entrySet()) {
+        for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
             Log.i(LOG_TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
             if (isCrazyradio(e.getValue())) {
                 device = e.getValue();
                 break; // stop after first matching device is found
             }
         }
-        if (device != null &amp;&amp; !usbManager.hasPermission(device)) {
+        if (device != null && !usbManager.hasPermission(device)) {
             Log.d(LOG_TAG, "Request permission");
             mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(context.getPackageName()+".USB_PERMISSION"), 0);
             usbManager.requestPermission(device, mPermissionIntent);
-        } else if (device != null &amp;&amp; usbManager.hasPermission(device)) {
+        } else if (device != null && usbManager.hasPermission(device)) {
             Log.d(LOG_TAG, "Has permission");
         } else {
             Log.d(LOG_TAG, "device == null");
@@ -157,14 +159,14 @@ public class UsbLinkAndroid implements IUsbLink{
     }
 
     public static boolean isCrazyradio(UsbDevice device){
-        return device.getVendorId() == CrazyradioLink.VENDOR_ID &amp;&amp; device.getProductId() == CrazyradioLink.PRODUCT_ID;
+        return device.getVendorId() == CrazyradioLink.VENDOR_ID && device.getProductId() == CrazyradioLink.PRODUCT_ID;
     }
 
     /* (non-Javadoc)
      * @see se.bitcraze.crazyflie.lib.IUsbLink#releaseInterface()
      */
     public void releaseInterface() {
-        if (mConnection != null &amp;&amp; mIntf != null){
+        if (mConnection != null && mIntf != null){
             mConnection.releaseInterface(mIntf);
             mConnection = null;
             mIntf = null;
@@ -175,7 +177,7 @@ public class UsbLinkAndroid implements IUsbLink{
      * @see se.bitcraze.crazyflie.lib.IUsbLink#isUsbConnected()
      */
     public boolean isUsbConnected() {
-        return mUsbDevice != null &amp;&amp; mConnection != null;
+        return mUsbDevice != null && mConnection != null;
     }
 
 }
