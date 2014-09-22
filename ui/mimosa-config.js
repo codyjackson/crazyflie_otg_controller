@@ -33,6 +33,14 @@ exports.config = {
       "angular": {
         "path": "javascripts/vendor/angular/angular",
         "exports": "angular"
+      },
+      "sylvester-vector": {
+        "path": "javascripts/vendor/sylvester/sylvester",
+        "exports": "$V"
+      },
+      "sylvester-matrix": {
+        "path": "javascripts/vendor/sylvester/sylvester",
+        "exports": "$M"
       }
     },
     "aliases": {

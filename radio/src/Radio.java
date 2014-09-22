@@ -1,11 +1,21 @@
 package radio;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import se.bitcraze.fluff.UsbLinkAndroid;
 import se.bitcraze.crazyflie.lib.ConnectionAdapter;
 import se.bitcraze.crazyflie.lib.CrazyradioLink;
+import se.bitcraze.crazyflie.lib.DataAdapter;
 import se.bitcraze.crazyflie.lib.Link;
+import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
+import se.bitcraze.crazyflie.lib.crtp.Port;
+import se.bitcraze.crazyflie.lib.crtp.log.Log;
+import se.bitcraze.crazyflie.lib.crtp.log.LogConfig;
+import se.bitcraze.crazyflie.lib.crtp.log.LogData;
+import se.bitcraze.crazyflie.lib.crtp.log.LogVariable;
+import se.bitcraze.crazyflie.lib.crtp.toc.TableOfContents;
 
 import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaWebView;
@@ -26,16 +36,22 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.widget.Toast;
 
+import java.util.Random;
+import java.nio.ByteBuffer;
+import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
+import se.bitcraze.crazyflie.lib.crtp.toc.TocItem;
+
 /**
  * This class echoes a string called from JavaScript.
  */
 public class Radio extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("echo")) {
-            String message = args.getString(0);
-            linkConnect();
-            callbackContext.success();
+        if (action.equals("connect")) {
+            connect(args, callbackContext);
+            return true;
+        } else if (action.equals("updateOrientation")) {
+            updateOrientation(args, callbackContext);
             return true;
         }
         return false;
@@ -50,9 +66,87 @@ public class Radio extends CordovaPlugin {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         context.registerReceiver(mUsbReceiver, filter);
+
+        _pitch = 0;
+        _roll = 0;
+        _yawRate = 0;
+        _thrust = 0;
+        _crazyradioUpdateThread = null;
     }
 
-    private Link mCrazyradioLink;
+    private float _pitch;
+    private float _roll;
+    private float _yawRate;
+    private float _thrust;
+    private Link _crazyradioLink;
+    private Thread _crazyradioUpdateThread;
+
+    private void connect(JSONArray args, CallbackContext callbackContext) {
+        android.util.Log.i("RADIO", "CONNECT CALLED");
+        TableOfContents logToc = new TableOfContents(Port.LOG);
+        linkConnect();
+
+        //request TOC CRC
+        logToc.verify(_crazyradioLink, true);
+
+        //wait until all TOC data has been received
+        long startTime = System.currentTimeMillis();
+        while(!logToc.isTocFetchFinished(_crazyradioLink) && System.currentTimeMillis()-startTime < 3000){
+            try {
+                Thread.sleep(400);
+            } catch (Exception e) {
+            }
+        }
+        if(!logToc.isTocFetchFinished(_crazyradioLink)){
+            callbackContext.error("Failed to fetch toc.");
+        }
+
+        final Log log = new Log(_crazyradioLink, logToc);
+        _crazyradioLink.addDataListener(new DataAdapter() {
+            @Override
+            public void logDataReceived(LogData packet) {
+                Map<String, Number> logVariables = log.parseLogVariables(packet);
+                String pitch = Float.toString(logVariables.get("stabilizer.pitch").floatValue());
+                String roll = Float.toString(logVariables.get("stabilizer.roll").floatValue());
+                String yaw = Float.toString(logVariables.get("stabilizer.yaw").floatValue());
+
+                executeJavascript("if(newCopterOrientation)newCopterOrientation(" + pitch + "," + roll + ","+yaw+");");
+            }
+        });
+        int stabalizerId = log.addLogConfiguration("stabilizer.pitch", "stabilizer.roll", "stabilizer.yaw");
+        log.startLogConfiguration(stabalizerId);
+
+        _crazyradioUpdateThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (_crazyradioLink != null) {
+                        char thrust = (char)(int)(_thrust * 65535);
+                        android.util.Log.i("RADIO THRUST", Float.toString(_pitch) " " + Float.toString(_yawRate));
+                        _crazyradioLink.send(new CommanderPacket(_roll, _pitch, _yawRate, thrust, false));
+                        Thread.sleep(20, 0);
+                    }
+                } catch(Exception e) {
+                }
+            }
+        });
+
+        _crazyradioUpdateThread.start();
+
+        callbackContext.success();
+    }
+
+    private void updateOrientation(JSONArray args, CallbackContext callbackContext) {
+        try {
+            _pitch = (float)args.getDouble(0);
+            _roll = (float)args.getDouble(1);
+            _yawRate = (float)args.getDouble(2);
+            _thrust = (float)args.getDouble(3);
+            callbackContext.success();
+        } catch(Exception e) {
+            
+        }
+    }
 
     private void executeJavascript(String js) {
         if(cordova == null) {
@@ -79,11 +173,10 @@ public class Radio extends CordovaPlugin {
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 if (device != null && UsbLinkAndroid.isCrazyradio(device)) {
-                    if (mCrazyradioLink != null) {
+                    if (_crazyradioLink != null) {
                         linkDisconnect();
                     }
                 }
-                //executeJavascriptInMain("test()");
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -105,10 +198,10 @@ public class Radio extends CordovaPlugin {
 
         try {
             // create link
-            mCrazyradioLink = new CrazyradioLink(new UsbLinkAndroid(context));
+            _crazyradioLink = new CrazyradioLink(new UsbLinkAndroid(context));
 
             // add listener for connection status
-            mCrazyradioLink.addConnectionListener(new ConnectionAdapter() {
+            _crazyradioLink.addConnectionListener(new ConnectionAdapter() {
                 @Override
                 public void connectionSetupFinished(Link l) {
                 }
@@ -132,13 +225,15 @@ public class Radio extends CordovaPlugin {
         } catch (IOException e) {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        mCrazyradioLink.connect(new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+        _crazyradioLink.connect(new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
     }
 
     private void linkDisconnect() {
-        if (mCrazyradioLink != null) {
-            mCrazyradioLink.disconnect();
-            mCrazyradioLink = null;
+        if (_crazyradioLink != null) {
+            _crazyradioLink.disconnect();
+            _crazyradioLink = null;
+            _crazyradioUpdateThread.interrupt();
+            _crazyradioUpdateThread = null;
         }
     }
 }

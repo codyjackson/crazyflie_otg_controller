@@ -1,6 +1,8 @@
 var $ = require('jquery');
 var angular = require('angular');
 var angularRoute = require('angular-route');
+var $V = require('sylvester-vector');
+var $M = require('sylvester-matrix');
 
 function getTemplatePath(path) {
     if(angular.isDefined(window.Cordova))
@@ -8,11 +10,21 @@ function getTemplatePath(path) {
     return path;
 }
 
+function radians(degrees){
+    return degrees*Math.PI/180.0;
+}
+
+function degrees(radians){
+    return radians*180.0/Math.PI;
+}
+
 function Orientation(pitch, roll, yaw) {
     this.pitch = pitch;
     this.roll = roll;
     this.yaw = yaw;
 }
+
+Orientation.prototype.toVec = 
 
 angular.module('application', ['ngRoute'])
     .config(['$routeProvider', function($routeProvider){
@@ -52,29 +64,35 @@ angular.module('application', ['ngRoute'])
             'orientation' : new Orientation(0, 0, 0)
         };
 
-        return {
-            connect: function() {
+        function makeCordovaApi(name, mock) {
+            function impl() {
+                var argsArray = Array.prototype.slice.call(arguments, 0);
+
                 var deferred = $q.defer();
-                test();
                 cordova.exec(function(){
                     deferred.resolve.apply(deferred, arguments);
                 }, function(){
                     deferred.reject.apply(deferred, arguments);
-                }, 'Radio', 'echo', ['hello']);
-
+                }, 'Radio', name, argsArray);
                 return deferred.promise;
-            },
-            setTargetThrust: function(percentage){
-                console.log(percentage);
-            },
-            setTargetPitch: function(degrees){
+            }
 
-            },
-            setTargetRoll: function(degrees) {
+            function mockImpl() {
+                if(mock) {
+                    return mock.apply(mock, arguments);
+                }
 
-            },
-            setTargetYaw: function(degrees) {
-            },
+                var deferred = $q.defer();
+                deferred.resolve();
+                return deferred.promise;
+            }
+
+            return typeof cordova !== 'undefined' ? impl : mockImpl;
+        }
+
+        return {
+            connect: makeCordovaApi('connect'),
+            updateOrientation: makeCordovaApi('updateOrientation'),
             //These should be called externally by cordova and not the application
             _newCopterOrientation: function(orientation) {
                 $rootScope.$apply(function(){
@@ -209,32 +227,57 @@ angular.module('application', ['ngRoute'])
             $rootScope.$emit('SCREEN_TAP');
         };
     }])
-    .controller('ConnectController', ['$rootScope', '$location', 'radio', function($rootScope, $location, radio){
-        $rootScope.$on('SCREEN_TAP', function(){
+    .controller('ConnectController', ['$rootScope', '$scope', '$location', 'radio', function($rootScope, $scope, $location, radio){
+        var deRegister = $rootScope.$on('SCREEN_TAP', function(){
             radio.connect().then(function(){
                 $location.path('calibrate');
             }, function(s){
                 alert('Failed to connect. Try again.');
             });
         });
+
+        $scope.$on("$destroy", function() {
+            deRegister();
+        });
     }])
     .controller('CalibrateController', ['$scope', '$rootScope', '$location', '$timeout', function($scope, $rootScope, $location, $timeout){
-        $rootScope.$on('SCREEN_TAP', function(){
-            console.log('did i get here?');
-            var phoneYaw = $rootScope.phone.orientation.yaw;
-            var copterYaw = $rootScope.copter.orientation.yaw;
-            $rootScope.phoneAndCopterYawDiff = phoneYaw - copterYaw;
+        var deRegister = $rootScope.$on('SCREEN_TAP', function(){
+            $rootScope.phone.calibratedYaw = $rootScope.phone.orientation.yaw;
+            $rootScope.copter.calibratedYaw  = $rootScope.copter.orientation.yaw;
+
             $timeout(function(){
                 $location.path('fly');
             });
         });
+
+        $scope.$on("$destroy", function() {
+            deRegister();
+        });
     }])
     .controller('FlyController', ['$rootScope', '$scope', 'radio', function($rootScope, $scope, radio){
+        $scope.orientation = new Orientation(0, 0, 0);
+        $scope.thrustPercentage = 0;
+
         $scope.onNewThrust = function(percentage) {
-            radio.setTargetThrust(percentage);
+            $scope.thrustPercentage = percentage;
         };
 
-        console.log($rootScope.phoneAndCopterYawDiff);
+        $rootScope.$watch(function(){
+            return $rootScope.phone.orientation;
+        }, function(){
+            $scope.orientation = $rootScope.phone.orientation;
+        });
+
+        (function(){
+            var intervalHandle = setInterval(function(){
+                var o = $scope.orientation;
+                radio.updateOrientation(o.pitch, o.roll, 0, $scope.thrustPercentage);
+            }, 100);
+
+            $scope.$on("$destroy", function() {
+                clearInterval(intervalHandle);
+            });
+        })();
     }])
     .controller('ReconnectController', [function(){
         console.log('ReconnectController');
@@ -249,16 +292,13 @@ angular.module('application', ['ngRoute'])
         var radioService = injector.get('radio');
         var phoneService = injector.get('phone');
 
-        setInterval(function(){
-           radioService._newCopterOrientation(new Orientation(Math.random(), Math.random(), Math.random()));
-        }, 200);
+
+        window.newCopterOrientation = function(pitch, roll, yaw) {
+            radioService._newCopterOrientation(new Orientation(pitch, roll, yaw));
+        }
 
         window.addEventListener('deviceorientation', function(ev){
             phoneService._newPhoneOrientation(new Orientation(ev.gamma, -ev.beta, ev.alpha));
         });
     });
 })();
-
-window.test = function() {
-    alert('hello foo');
-};

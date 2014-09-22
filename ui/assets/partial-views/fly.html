@@ -4,7 +4,9 @@
         <a href="#/turnoff"><i class="fa fa-power-off"></i></a>
     </span>
 </div>
-
+<div class="content">
+    {{copter.orientation.pitch}}, {{copter.orientation.roll}}, {{copter.orientation.yaw}}
+</div>
 <div track="onNewThrust($percentage)">
     <div class="visual-track"></div>
     <div class="visual-track"></div>
