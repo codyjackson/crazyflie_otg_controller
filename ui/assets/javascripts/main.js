@@ -1,8 +1,6 @@
 var $ = require('jquery');
 var angular = require('angular');
 var angularRoute = require('angular-route');
-var $V = require('sylvester-vector');
-var $M = require('sylvester-matrix');
 
 function getTemplatePath(path) {
     if(angular.isDefined(window.Cordova))
@@ -24,7 +22,15 @@ function Orientation(pitch, roll, yaw) {
     this.yaw = yaw;
 }
 
-Orientation.prototype.toVec = 
+Orientation.prototype.calculateCorrectedOrientation = function (yawFrameOfReference, currentYaw) {
+    var yawDeviation =  currentYaw - yawFrameOfReference;
+    var v = Vector.create([this.roll, this.pitch, 0]);
+    var m = Matrix.RotationZ(radians(yawDeviation));
+    var v2 = m.multiply(v);
+
+    console.log([v2.e(1), v2.e(2)]);
+    return new Orientation(v2.e(1), v2.e(2), 0);
+};
 
 angular.module('application', ['ngRoute'])
     .config(['$routeProvider', function($routeProvider){
@@ -228,6 +234,9 @@ angular.module('application', ['ngRoute'])
         };
     }])
     .controller('ConnectController', ['$rootScope', '$scope', '$location', 'radio', function($rootScope, $scope, $location, radio){
+        $location.path('calibrate');
+        return;
+
         var deRegister = $rootScope.$on('SCREEN_TAP', function(){
             radio.connect().then(function(){
                 $location.path('calibrate');
@@ -242,8 +251,8 @@ angular.module('application', ['ngRoute'])
     }])
     .controller('CalibrateController', ['$scope', '$rootScope', '$location', '$timeout', function($scope, $rootScope, $location, $timeout){
         var deRegister = $rootScope.$on('SCREEN_TAP', function(){
-            $rootScope.phone.calibratedYaw = $rootScope.phone.orientation.yaw;
-            $rootScope.copter.calibratedYaw  = $rootScope.copter.orientation.yaw;
+            $rootScope.phone.frameOfReferenceYaw = $rootScope.phone.orientation.yaw;
+            $rootScope.copter.frameOfReferenceYaw = $rootScope.copter.orientation.yaw;
 
             $timeout(function(){
                 $location.path('fly');
@@ -265,13 +274,13 @@ angular.module('application', ['ngRoute'])
         $rootScope.$watch(function(){
             return $rootScope.phone.orientation;
         }, function(){
-            $scope.orientation = $rootScope.phone.orientation;
+            $scope.targetOrientation = $rootScope.phone.orientation.calculateCorrectedOrientation($rootScope.phone.frameOfReferenceYaw + 90, $rootScope.phone.orientation.yaw);
         });
 
         (function(){
             var intervalHandle = setInterval(function(){
-                var o = $scope.orientation;
-                radio.updateOrientation(o.pitch, o.roll, 0, $scope.thrustPercentage);
+                //var copterCorrectedOrientation = $scope.targetOrientation.calculateCorrectedOrientation($rootScope.copter.frameOfReferenceYaw , $rootScope.copter.orientation.yaw);
+                radio.updateOrientation($rootScope.phone.orientation.pitch/2, $rootScope.phone.orientation.roll/2, 0, $scope.thrustPercentage);
             }, 100);
 
             $scope.$on("$destroy", function() {
@@ -295,7 +304,7 @@ angular.module('application', ['ngRoute'])
 
         window.newCopterOrientation = function(pitch, roll, yaw) {
             radioService._newCopterOrientation(new Orientation(pitch, roll, yaw));
-        }
+        };
 
         window.addEventListener('deviceorientation', function(ev){
             phoneService._newPhoneOrientation(new Orientation(ev.gamma, -ev.beta, ev.alpha));
