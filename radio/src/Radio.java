@@ -37,7 +37,9 @@ import android.hardware.usb.UsbManager;
 import android.widget.Toast;
 
 import java.util.Random;
+import java.util.Formatter;
 import java.nio.ByteBuffer;
+import se.bitcraze.crazyflie.lib.crtp.VariableType;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.crtp.toc.TocItem;
 
@@ -106,15 +108,16 @@ public class Radio extends CordovaPlugin {
             @Override
             public void logDataReceived(LogData packet) {
                 Map<String, Number> logVariables = log.parseLogVariables(packet);
-                String pitch = Float.toString(logVariables.get("stabilizer.pitch").floatValue());
-                String roll = Float.toString(logVariables.get("stabilizer.roll").floatValue());
-                String yaw = Float.toString(logVariables.get("stabilizer.yaw").floatValue());
+                String yaw = Short.toString(logVariables.get("stabilizer.yaw").shortValue());
 
-                executeJavascript("if(newCopterOrientation)newCopterOrientation(" + pitch + "," + roll + ","+yaw+");");
+                executeJavascript("if(newCopterOrientation)newCopterOrientation(" + yaw + ");");
             }
         });
-        int stabalizerId = log.addLogConfiguration("stabilizer.pitch", "stabilizer.roll", "stabilizer.yaw");
-        log.startLogConfiguration(stabalizerId);
+        TocItem yawItem = logToc.getItem("stabilizer.yaw");
+        LogConfig config = log.createLogConfig(100);
+        config.addLogVariable("stabilizer.yaw", VariableType.INT32_T, yawItem.getId());
+        int logId = log.addLogConfiguration(config);
+        log.startLogConfiguration(logId);
 
         _crazyradioUpdateThread = new Thread(new Runnable() {
             @Override
@@ -122,7 +125,6 @@ public class Radio extends CordovaPlugin {
                 try {
                     while (_crazyradioLink != null) {
                         char thrust = (char)(int)(_thrust * 65535);
-                        android.util.Log.i("RADIO THRUST", Float.toString(_pitch) " " + Float.toString(_yawRate));
                         _crazyradioLink.send(new CommanderPacket(_roll, _pitch, _yawRate, thrust, false));
                         Thread.sleep(20, 0);
                     }

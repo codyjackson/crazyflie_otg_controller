@@ -27,8 +27,6 @@ Orientation.prototype.calculateCorrectedOrientation = function (yawFrameOfRefere
     var v = Vector.create([this.roll, this.pitch, 0]);
     var m = Matrix.RotationZ(radians(yawDeviation));
     var v2 = m.multiply(v);
-
-    console.log([v2.e(1), v2.e(2)]);
     return new Orientation(v2.e(1), v2.e(2), 0);
 };
 
@@ -67,7 +65,7 @@ angular.module('application', ['ngRoute'])
     }])
     .factory('radio', ['$q', '$rootScope', function($q, $rootScope){
         $rootScope.copter = {
-            'orientation' : new Orientation(0, 0, 0)
+            yaw : 0
         };
 
         function makeCordovaApi(name, mock) {
@@ -100,9 +98,9 @@ angular.module('application', ['ngRoute'])
             connect: makeCordovaApi('connect'),
             updateOrientation: makeCordovaApi('updateOrientation'),
             //These should be called externally by cordova and not the application
-            _newCopterOrientation: function(orientation) {
+            _newCopterYaw: function(yaw) {
                 $rootScope.$apply(function(){
-                    $rootScope.copter.orientation = orientation;
+                    $rootScope.copter.yaw = yaw;
                 });
             }
         };
@@ -234,9 +232,6 @@ angular.module('application', ['ngRoute'])
         };
     }])
     .controller('ConnectController', ['$rootScope', '$scope', '$location', 'radio', function($rootScope, $scope, $location, radio){
-        $location.path('calibrate');
-        return;
-
         var deRegister = $rootScope.$on('SCREEN_TAP', function(){
             radio.connect().then(function(){
                 $location.path('calibrate');
@@ -252,7 +247,7 @@ angular.module('application', ['ngRoute'])
     .controller('CalibrateController', ['$scope', '$rootScope', '$location', '$timeout', function($scope, $rootScope, $location, $timeout){
         var deRegister = $rootScope.$on('SCREEN_TAP', function(){
             $rootScope.phone.frameOfReferenceYaw = $rootScope.phone.orientation.yaw;
-            $rootScope.copter.frameOfReferenceYaw = $rootScope.copter.orientation.yaw;
+            $rootScope.copter.frameOfReferenceYaw = $rootScope.copter.yaw;
 
             $timeout(function(){
                 $location.path('fly');
@@ -274,13 +269,15 @@ angular.module('application', ['ngRoute'])
         $rootScope.$watch(function(){
             return $rootScope.phone.orientation;
         }, function(){
-            $scope.targetOrientation = $rootScope.phone.orientation.calculateCorrectedOrientation($rootScope.phone.frameOfReferenceYaw + 90, $rootScope.phone.orientation.yaw);
+            $scope.targetOrientation = $rootScope.phone.orientation.calculateCorrectedOrientation($rootScope.phone.frameOfReferenceYaw - 90, $rootScope.phone.orientation.yaw);
         });
 
         (function(){
             var intervalHandle = setInterval(function(){
-                //var copterCorrectedOrientation = $scope.targetOrientation.calculateCorrectedOrientation($rootScope.copter.frameOfReferenceYaw , $rootScope.copter.orientation.yaw);
-                radio.updateOrientation($rootScope.phone.orientation.pitch/2, $rootScope.phone.orientation.roll/2, 0, $scope.thrustPercentage);
+                var copterCorrectedOrientation = $scope.targetOrientation.calculateCorrectedOrientation($rootScope.copter.frameOfReferenceYaw , $rootScope.copter.yaw);
+                //-+
+                //+-
+                radio.updateOrientation(copterCorrectedOrientation.pitch/2, copterCorrectedOrientation.roll/2, 0, $scope.thrustPercentage);
             }, 100);
 
             $scope.$on("$destroy", function() {
@@ -302,12 +299,12 @@ angular.module('application', ['ngRoute'])
         var phoneService = injector.get('phone');
 
 
-        window.newCopterOrientation = function(pitch, roll, yaw) {
-            radioService._newCopterOrientation(new Orientation(pitch, roll, yaw));
+        window.newCopterOrientation = function(yaw) {
+            radioService._newCopterYaw(yaw);
         };
 
         window.addEventListener('deviceorientation', function(ev){
-            phoneService._newPhoneOrientation(new Orientation(ev.gamma, -ev.beta, ev.alpha));
+            phoneService._newPhoneOrientation(new Orientation(-ev.gamma, -ev.beta, ev.alpha));
         });
     });
 })();
