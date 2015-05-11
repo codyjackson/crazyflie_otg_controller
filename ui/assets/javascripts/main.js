@@ -226,6 +226,39 @@ angular.module('application', ['ngRoute'])
             }
         };
     }])
+    .directive('yawIndicator', [function(){
+        return {
+            restrict: 'A',
+            templateUrl: getTemplatePath('partial-views/yaw-indicator.html'),
+            scope: {
+                angle: '='
+            },
+            transclude: 'replace',
+            link: function(scope, element, attributes) {
+                if(!(attributes.sideLength && attributes.color && scope.angle)) {
+                    throw 'The "sideLength", "color" and "angle" attributes must be defined.';
+                }
+
+                scope.containerStyle = {
+                    width: attributes.sideLength,
+                    height: attributes.sideLength
+                };
+
+                function formatRotate(angle) {
+                    return 'rotate(' + angle + 'deg)';
+                }
+
+                scope.indicatorStyle = {
+                    borderColor: attributes.color,
+                    transform: formatRotate(scope.angle)
+                };
+
+                scope.$watch('angle', function(angle){
+                    scope.indicatorStyle.transform = formatRotate(angle);
+                });
+            }
+        };
+    }])
     .controller('GlobalController', ['$scope', '$rootScope', function($scope, $rootScope){
         $scope.onScreenTap = function(){
             $rootScope.$emit('SCREEN_TAP');
@@ -262,6 +295,9 @@ angular.module('application', ['ngRoute'])
         $scope.orientation = new Orientation(0, 0, 0);
         $scope.thrustPercentage = 0;
 
+        $scope.phoneYaw = $rootScope.phone.orientation.yaw;
+        $scope.copterYaw = $rootScope.copter.yaw;
+
         $scope.onNewThrust = function(percentage) {
             $scope.thrustPercentage = percentage;
         };
@@ -269,6 +305,8 @@ angular.module('application', ['ngRoute'])
         $rootScope.$watch(function(){
             return $rootScope.phone.orientation;
         }, function(){
+            $scope.phoneYaw = $rootScope.phone.orientation.yaw;
+            $scope.copterYaw = $rootScope.copter.yaw;
             $scope.targetOrientation = $rootScope.phone.orientation.calculateCorrectedOrientation($rootScope.phone.frameOfReferenceYaw - 90, $rootScope.phone.orientation.yaw);
         });
 

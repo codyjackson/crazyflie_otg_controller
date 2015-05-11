@@ -5,7 +5,10 @@
     </span>
 </div>
 <div class="content">
-    <div>{{phone.orientation.pitch}}, {{phone.orientation.roll}}, {{phone.orientation.yaw}}</div>
+    <div id="yaw-trackers">
+        <div yaw-indicator side-length="94%" color="#E99104" angle="phoneYaw"></div>
+        <div yaw-indicator side-length="88%" color="#6B322C" angle="copterYaw"></div>
+    </div>
 </div>
 <div track="onNewThrust($percentage)">
     <div class="visual-track"></div>

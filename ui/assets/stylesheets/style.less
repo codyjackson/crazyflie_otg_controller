@@ -18,8 +18,7 @@ body {
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+
   cursor: default;
 }
 
@@ -55,13 +54,7 @@ div[bar] {
   height: @navbar-height;
 
   .buttons i {
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
-    -o-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
     transform: rotate(90deg);
-
-    //margin-right: 0.3em;
   }
 
   .buttons {
@@ -119,5 +112,56 @@ div[track] {
   div[lever] {
     position: relative;
     display: inline-block;
+  }
+}
+
+#yaw-trackers {
+  position: relative;
+  height: 1050px;
+  width: 1050px;
+
+  .vertical-center-helper {
+    position: absolute;
+    overflow: visible;
+    width: 100%;
+    height: 100%;
+    margin-top: 50%
+  }
+  .tracker {
+    margin: auto;
+    .indicator {
+      width: 100%;
+      height: 100%;
+
+      margin-top:-50%;
+      margin-left: auto;
+      margin-right: auto;
+
+      border: 0.4em solid #E99104;
+      border-radius: 50%;
+      border-bottom-style: none;
+      border-left-style: none;
+      border-top-style: none;
+    }
+  }
+
+  #phone-yaw-tracker {
+    margin: 3%;
+    width: 94%;
+    height: 94%;
+
+    .indicator {
+      border-right-color: #E99104;
+    }
+  }
+
+  #copter-yaw-tracker {
+    margin: 6%;
+    width: 88%;
+    height: 88%;
+
+    .indicator {
+      border-right-color: #6B322C;
+    }
   }
 }
