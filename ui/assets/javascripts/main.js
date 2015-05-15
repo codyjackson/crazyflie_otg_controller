@@ -22,10 +22,9 @@ function Orientation(pitch, roll, yaw) {
     this.yaw = yaw;
 }
 
-Orientation.prototype.calculateCorrectedOrientation = function (yawFrameOfReference, currentYaw) {
-    var yawDeviation =  currentYaw - yawFrameOfReference;
-    var v = Vector.create([this.roll, this.pitch, 0]);
-    var m = Matrix.RotationZ(radians(yawDeviation));
+Orientation.prototype.rotateYaw = function (angle) {
+    var v = Vector.create([this.pitch, this.roll, 0]);
+    var m = Matrix.RotationZ(radians(angle));
     var v2 = m.multiply(v);
     return new Orientation(v2.e(1), v2.e(2), 0);
 };
@@ -298,24 +297,33 @@ angular.module('application', ['ngRoute'])
         $scope.phoneYaw = $rootScope.phone.orientation.yaw;
         $scope.copterYaw = $rootScope.copter.yaw;
 
+        $scope.phoneYawDeviation = 0;
+        $scope.copterYawDeviation = 0;
+
         $scope.onNewThrust = function(percentage) {
             $scope.thrustPercentage = percentage;
         };
 
         $rootScope.$watch(function(){
-            return $rootScope.phone.orientation;
+            return $rootScope.phone.orientation.yaw;
         }, function(){
             $scope.phoneYaw = $rootScope.phone.orientation.yaw;
+            $scope.phoneYawDeviation = $scope.phoneYaw - $rootScope.phone.frameOfReferenceYaw;
+        });
+
+        $rootScope.$watch(function(){
+            return $rootScope.copter.yaw;
+        }, function(){
             $scope.copterYaw = $rootScope.copter.yaw;
-            $scope.targetOrientation = $rootScope.phone.orientation.calculateCorrectedOrientation($rootScope.phone.frameOfReferenceYaw - 90, $rootScope.phone.orientation.yaw);
+            $scope.copterYawDeviation = $scope.copterYaw - $rootScope.copter.frameOfReferenceYaw;
         });
 
         (function(){
             var intervalHandle = setInterval(function(){
-                var copterCorrectedOrientation = $scope.targetOrientation.calculateCorrectedOrientation($rootScope.copter.frameOfReferenceYaw , $rootScope.copter.yaw);
-                //-+
-                //+-
-                radio.updateOrientation(copterCorrectedOrientation.pitch/2, copterCorrectedOrientation.roll/2, 0, $scope.thrustPercentage);
+                var yawAggregateDeviation =  $scope.phoneYawDeviation - $scope.copterYawDeviation;
+                var targetCopterOrientation = $rootScope.phone.orientation.rotateYaw(yawAggregateDeviation);
+
+                radio.updateOrientation(targetCopterOrientation.pitch/2, targetCopterOrientation.roll/2, 0, $scope.thrustPercentage);
             }, 100);
 
             $scope.$on("$destroy", function() {
@@ -336,13 +344,12 @@ angular.module('application', ['ngRoute'])
         var radioService = injector.get('radio');
         var phoneService = injector.get('phone');
 
-
         window.newCopterOrientation = function(yaw) {
             radioService._newCopterYaw(yaw);
         };
 
         window.addEventListener('deviceorientation', function(ev){
-            phoneService._newPhoneOrientation(new Orientation(-ev.gamma, -ev.beta, ev.alpha));
+            phoneService._newPhoneOrientation(new Orientation(ev.beta, -ev.gamma, -ev.alpha));
         });
     });
 })();
