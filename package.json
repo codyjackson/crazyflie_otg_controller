@@ -5,7 +5,7 @@
   "main": "none",
   "dependencies": {
     "execSync": "~1.0.1-pre",
-    "gulp": "3.8.7",
+    "gulp": "3.8.11",
     "rimraf": "2.1"
   },
   "devDependencies": {},
