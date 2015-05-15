@@ -8,11 +8,12 @@ var paths = {
     'cordova': 'www'
 };
 
-gulp.task('build', function(){
+gulp.task('build-impl', function(){
+    var cwd = process.cwd();
     process.chdir(paths.webapp);
     var mimosaBuildResults = execSync('mimosa build -o -P phone-build');
     console.log(mimosaBuildResults);
-    process.exit(0);
+    process.chdir(cwd);
 });
 
 function replaceAllInFile(file, target, source) {
@@ -56,7 +57,7 @@ function getHosts() {
 
 var prompt = require('gulp-prompt');
 
-gulp.task('build-live-reload', function(){
+gulp.task('build-live-reload-impl', function(){
     //Build
     var cwd = process.cwd();
     process.chdir(paths.webapp);
@@ -79,10 +80,23 @@ gulp.task('build-live-reload', function(){
     }));
 });
 
-gulp.task('build-backend', function(){
+gulp.task('build-backend-impl', function(){
     var pluginPath = process.cwd()+'\\radio';
     console.log(execSync('cordova plugin remove radio'));
     console.log(execSync('cordova plugin add ' + pluginPath));
     console.log(execSync('cordova build android'));
+});
+
+gulp.task('deploy-impl', function(){
+    console.log(execSync('cordova run android'));
+});
+
+gulp.task('kill', function(){
     process.exit(0);
 });
+
+gulp.task('build', ['build-impl', 'kill']);
+
+gulp.task('build-backend', ['build-backend-impl', 'kill']);
+
+gulp.task('build-and-deploy', ['build-impl', 'build-backend-impl', 'deploy-impl', 'kill']);
