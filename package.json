@@ -6,7 +6,8 @@
   "dependencies": {
     "execSync": "~1.0.1-pre",
     "gulp": "3.8.11",
-    "rimraf": "2.1"
+    "rimraf": "2.1",
+    "fs-extra": "^0.18.3"
   },
   "devDependencies": {},
   "scripts": {

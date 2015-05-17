@@ -1,22 +1,24 @@
 exports.config = {
   "modules": [
-    "copy",
     "server",
     "browserify",
     "jshint",
-    "csslint",
     "minify-js",
     "minify-css",
     "live-reload",
     "bower",
     "less",
-    "server-template-compile"
+    "server-template-compile",
+    "copy"
   ],
   "server": {
     "views": {
       "compileWith": "handlebars",
       "extension": "hbs"
     }
+  },
+  "watch" : {
+    "exclude": [/\.db$/]
   },
   "browserify": {
     "bundles": [
@@ -25,6 +27,7 @@ exports.config = {
         "outputFile": "bundle.js" 
       }
     ],
+    "paths": ["javascripts"],
     "shims": {
       "jquery": {
         "path": "javascripts/vendor/jquery/jquery",
@@ -35,6 +38,10 @@ exports.config = {
         "exports": "angular"
       }
     },
+    "noParse" : [
+      "javascripts/vendor/jquery/jquery",
+      "javascripts/vendor/angular/angular"
+    ],
     "aliases": {
       "angular-route": "javascripts/vendor/angular-route/angular-route"
     }

@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var execSync = require('execSync').run;
-var fs = require('fs');
+var fs = require('fs-extra');
 
 var paths = {
     'webapp': 'ui',
@@ -8,12 +8,18 @@ var paths = {
     'cordova': 'www'
 };
 
+gulp.task('clean-cordova-impl', function(){
+    fs.removeSync(paths['cordova']);
+});
+
 gulp.task('build-impl', function(){
     var cwd = process.cwd();
     process.chdir(paths.webapp);
-    var mimosaBuildResults = execSync('mimosa build -o -P phone-build');
+    var mimosaBuildResults = execSync('mimosa build');
     console.log(mimosaBuildResults);
     process.chdir(cwd);
+
+    fs.copySync(paths['webapp-build'], paths['cordova']);
 });
 
 function replaceAllInFile(file, target, source) {
@@ -95,8 +101,10 @@ gulp.task('kill', function(){
     process.exit(0);
 });
 
-gulp.task('build', ['build-impl', 'kill']);
+gulp.task('clean', ['clean-cordova-impl', 'kill']);
+
+gulp.task('build', ['clean-cordova-impl', 'build-impl', 'kill']);
 
 gulp.task('build-backend', ['build-backend-impl', 'kill']);
 
-gulp.task('build-and-deploy', ['build-impl', 'build-backend-impl', 'deploy-impl', 'kill']);
+gulp.task('build-and-deploy', ['clean-cordova-impl','build-impl', 'build-backend-impl', 'deploy-impl', 'kill']);
