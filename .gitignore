@@ -1,4 +1,11 @@
-/platforms/android/
+/platforms/android/**
+!/platforms/android/res
+/platforms/android/res/values
+/platforms/android/res/xml
+
 /www/
 /node_modules/
 /plugins/
+/build
+
+Thumbs.db
