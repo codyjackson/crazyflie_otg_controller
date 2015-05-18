@@ -4,12 +4,6 @@ var index = function(config) {
     cachebust = "?b=" + (new Date()).getTime()
   }
 
-  var options = {
-    reload:    config.liveReload.enabled,
-    optimize:  config.isOptimize != null ? config.isOptimize : false,
-    cachebust: cachebust
-  };
-
   // In the event plain html pages are being used, need to
   // switch to different page for optimized view
   var name = "index";
@@ -18,6 +12,13 @@ var index = function(config) {
   }
 
   return function(req, res) {
+    var options = {
+      reload:    config.liveReload.enabled,
+      optimize:  config.isOptimize != null ? config.isOptimize : false,
+      cachebust: cachebust,
+      phone: req.headers['user-agent'].indexOf('Android') !== -1
+    };
+
     res.render(name, options);
   };
 };

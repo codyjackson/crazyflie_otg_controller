@@ -3,6 +3,9 @@
 /platforms/android/res/values
 /platforms/android/res/xml
 
+cordova.js
+cordova_plugins.js
+
 /www/
 /node_modules/
 /plugins/

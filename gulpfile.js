@@ -1,15 +1,27 @@
-var gulp = require('gulp');
 var execSync = require('execSync').run;
 var fs = require('fs-extra');
+var gulp = require('gulp');
+var prompt = require('gulp-prompt');
+var runSequence = require('run-sequence');
 
 var paths = {
     'webapp': 'ui',
     'webapp-build': 'ui/public',
-    'cordova': 'www'
+    'webapp-build-javascripts': 'ui/assets/javascripts',
+    'cordova': 'www',
+    'cordova-js': 'platforms/android/assets/www'
 };
+
+function updateContentSrc(source) {
+    var file = 'config.xml';
+    var fileData = fs.readFileSync(file, 'utf8');
+    var replacedFileData = fileData.replace(new RegExp(/<content src.+>/), '<content src="'+ source +'"/>');
+    fs.writeFileSync(file, replacedFileData);
+}
 
 gulp.task('clean-cordova-impl', function(){
     fs.removeSync(paths['cordova']);
+    fs.emptyDir(paths['cordova']);
 });
 
 gulp.task('build-impl', function(){
@@ -22,31 +34,24 @@ gulp.task('build-impl', function(){
     fs.copySync(paths['webapp-build'], paths['cordova']);
 });
 
-function replaceAllInFile(file, target, source) {
-    fs.readFile(file, 'utf8', function (err, data) {
-        if (err) {
-            return console.log(err);
-        }
-        var result = data.replace(new RegExp(target, 'g'), source);
+gulp.task('run-live-reload-server-impl', function(){
 
-        fs.writeFile(file, result, 'utf8', function (err) {
-            if (err) return console.log(err);
-        });
-    });
-}
+    fs.copySync(paths['cordova-js'], paths['webapp-build-javascripts']);
 
-var readline = require('readline');
-
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+    var cwd = process.cwd();
+    process.chdir(paths.webapp);
+    var mimosaBuildResults = execSync('mimosa watch --server');
+    console.log(mimosaBuildResults);
 });
 
-function getHost() {
-    rl.question('Enter your host (i.e. 192.168.0.101:3000):', function(host){
-        console.log(amswer);
-    });
-}
+gulp.task('build-backend-impl', function(){
+    updateContentSrc('index.html');
+    var pluginPath = process.cwd()+'\\radio';
+
+    console.log(execSync('cordova plugin remove radio'));
+    console.log(execSync('cordova plugin add ' + pluginPath));
+    console.log(execSync('cordova build android'));
+});
 
 function getHosts() {
     var ifaces = require('os').networkInterfaces();
@@ -61,36 +66,21 @@ function getHosts() {
     return hosts;
 }
 
-var prompt = require('gulp-prompt');
+gulp.task('build-backend-live-reload-impl', function(){
+    return gulp.src('config.xml')
+        .pipe(prompt.prompt({
+            type: 'list',
+            name: 'host',
+            message: 'Select your host:',
+            choices: getHosts()
+        }, function(res){
+            updateContentSrc('http://' + res.host);
 
-gulp.task('build-live-reload-impl', function(){
-    //Build
-    var cwd = process.cwd();
-    process.chdir(paths.webapp);
-    var mimosaBuildResults = execSync('mimosa build -P phone-live-reload-build');
-    console.log(mimosaBuildResults);
-    process.chdir(cwd);
-
-    //Replace host placeholder text
-    
-
-    return gulp.src(paths.cordova + '/index.html')
-   .pipe(prompt.prompt({
-        type: 'list',
-        name: 'host',
-        message: 'Select your host:',
-        choices: getHosts()
-    }, function(res){
-        replaceAllInFile(paths.cordova + '/index.html', '{placeholderhost}', res.host);
-        process.exit(0);
-    }));
-});
-
-gulp.task('build-backend-impl', function(){
-    var pluginPath = process.cwd()+'\\radio';
-    console.log(execSync('cordova plugin remove radio'));
-    console.log(execSync('cordova plugin add ' + pluginPath));
-    console.log(execSync('cordova build android'));
+            var pluginPath = process.cwd()+'\\radio';
+            console.log(execSync('cordova plugin remove radio'));
+            console.log(execSync('cordova plugin add ' + pluginPath));
+            console.log(execSync('cordova build android'));
+        }));
 });
 
 gulp.task('deploy-impl', function(){
@@ -101,10 +91,22 @@ gulp.task('kill', function(){
     process.exit(0);
 });
 
-gulp.task('clean', ['clean-cordova-impl', 'kill']);
+gulp.task('clean', function(){
+    runSequence('clean-cordova-impl', 'kill');
+});
 
-gulp.task('build', ['clean-cordova-impl', 'build-impl', 'kill']);
+gulp.task('build', function(){
+    runSequence('clean-cordova-impl', 'build-impl', 'kill');
+});
 
-gulp.task('build-backend', ['build-backend-impl', 'kill']);
+gulp.task('build-backend', function(){
+    runSequence('build-backend-impl', 'kill');
+});
 
-gulp.task('build-and-deploy', ['clean-cordova-impl','build-impl', 'build-backend-impl', 'deploy-impl', 'kill']);
+gulp.task('build-and-deploy-live-reload', function(){
+    runSequence('clean-cordova-impl', 'build-backend-live-reload-impl', 'deploy-impl', 'run-live-reload-server-impl');
+});
+
+gulp.task('build-and-deploy', function(){
+    runSequence('clean-cordova-impl','build-impl', 'build-backend-impl', 'deploy-impl', 'kill');
+});

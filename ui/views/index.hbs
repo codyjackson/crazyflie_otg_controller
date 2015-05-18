@@ -2,20 +2,27 @@
 <html ng-controller="GlobalController">
   <head>
     <title>Mimosa</title>
+    
 
-    <link rel="stylesheet" href="stylesheets/vendor/bootstrap/bootstrap.css" />
-    <link rel="stylesheet" href="stylesheets/vendor/font-awesome/font-awesome.css" />
-    <link rel="stylesheet" href="stylesheets/style.css" />
+      <link rel="stylesheet" href="stylesheets/vendor/bootstrap/bootstrap.css" />
+      <link rel="stylesheet" href="stylesheets/vendor/font-awesome/font-awesome.css" />
+      <link rel="stylesheet" href="stylesheets/style.css" />
 
+      {{#if reload}}
+        {{#phone}}
+          <script src="javascripts/cordova.js"></script>
+        {{/phone}}
 
-    {{#reload}}
-      <script src="/socket.io/socket.io.js"></script>
-      <script src="/javascripts/reload-client.js"></script>
-    {{/reload}}
+        <script src="socket.io/socket.io.js"></script>
+        <script src="javascripts/reload-client.js"></script>
+      {{else}}
+          <script src="cordova.js"></script>
+      {{/if}}
+      <script src="javascripts/vendor/sylvester/sylvester.js"></script>
+      <script src="javascripts/bundle.js"></script>
+      
 
-    <script src="javascripts/vendor/sylvester/sylvester.js"></script>
-    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
-    <script src="javascripts/bundle.js"></script>
+    
     <script type="text/javascript">
     var meta = document.createElement("meta");
     meta.setAttribute('name','viewport');
