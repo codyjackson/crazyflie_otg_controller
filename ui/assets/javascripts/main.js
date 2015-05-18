@@ -32,6 +32,11 @@ angular.module('application', ['ngRoute', 'services', 'controllers', 'directives
     }]);
 
 (function(){
+    var meta = document.createElement("meta");
+    meta.setAttribute('name','viewport');
+    meta.setAttribute('content','initial-scale=1,height=1701,user-scalable=no, width=1080,maximum-scale='+ (1/window.devicePixelRatio) + ',minimum-scale='+ (1/window.devicePixelRatio));
+    document.getElementsByTagName('head')[0].appendChild(meta);
+
     var applicationElement = angular.element(document);
     applicationElement.ready(function(){
         angular.bootstrap(document, ['application']);
