@@ -4,13 +4,13 @@
   "description": "Combining the CrazyFlie android project with my web project that tracks copter and controller yaw.",
   "main": "none",
   "dependencies": {
-    "execSync": "~1.0.1-pre",
-    "gulp": "3.8.11",
+    "gulp": "3.9.0",
     "rimraf": "2.1",
     "fs-extra": "^0.18.3"
   },
   "devDependencies": {
-    "run-sequence": "^1.1.0"
+    "run-sequence": "^1.1.0",
+    "sync-exec": "^0.5.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

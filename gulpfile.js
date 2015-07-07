@@ -1,4 +1,4 @@
-var execSync = require('execSync').run;
+var execSync = require('sync-exec');
 var fs = require('fs-extra');
 var gulp = require('gulp');
 var prompt = require('gulp-prompt');
@@ -28,7 +28,8 @@ gulp.task('build-impl', function(){
     var cwd = process.cwd();
     process.chdir(paths.webapp);
     var mimosaBuildResults = execSync('mimosa build');
-    console.log(mimosaBuildResults);
+    console.log(mimosaBuildResults.stdout);
+    console.error(mimosaBuildResults.stderr);
     process.chdir(cwd);
 
     fs.copySync(paths['webapp-build'], paths['cordova']);
@@ -48,9 +49,17 @@ gulp.task('build-backend-impl', function(){
     updateContentSrc('index.html');
     var pluginPath = process.cwd()+'\\radio';
 
-    console.log(execSync('cordova plugin remove radio'));
-    console.log(execSync('cordova plugin add ' + pluginPath));
-    console.log(execSync('cordova build android'));
+    var removeRadioResult = execSync('cordova plugin remove radio');
+    console.log(removeRadioResult.stdout);
+    console.error(removeRadioResult.stderr);
+
+    var addRadioResult = execSync('cordova plugin add ' + pluginPath);
+    console.log(addRadioResult.stdout);
+    console.error(addRadioResult.stderr);
+
+    var buildResult = execSync('cordova build android');
+    console.log(buildResult.stdout);
+    console.error(buildResult.stderr);
 });
 
 function getHosts() {
@@ -84,7 +93,9 @@ gulp.task('build-backend-live-reload-impl', function(){
 });
 
 gulp.task('deploy-impl', function(){
-    console.log(execSync('cordova run android'));
+    var runResult = execSync('cordova run android');
+    console.log(runResult.stdout);
+    console.error(runResult.stderr);
 });
 
 gulp.task('kill', function(){

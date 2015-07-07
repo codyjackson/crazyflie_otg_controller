@@ -31,9 +31,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.widget.Toast;
 
 import java.util.Random;
@@ -63,7 +63,7 @@ public class Radio extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         this.cordova = cordova;
         CordovaActivity activity = (CordovaActivity)cordova.getActivity();
-        Context context = activity.getContext();
+        Context context = activity.getApplicationContext();
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -157,7 +157,7 @@ public class Radio extends CordovaPlugin {
 
         final CordovaActivity activity = (CordovaActivity)cordova.getActivity();
         if(activity != null) {
-            activity.sendJavascript(js);
+            sendJavascript(js);
         }
     }
 
@@ -196,7 +196,7 @@ public class Radio extends CordovaPlugin {
         int radioDatarate =  0;
 
         final CordovaActivity activity = (CordovaActivity)cordova.getActivity();
-        final Context context = activity.getContext();
+        final Context context = activity.getApplicationContext();
 
         try {
             // create link
@@ -238,4 +238,17 @@ public class Radio extends CordovaPlugin {
             _crazyradioUpdateThread = null;
         }
     }
+
+    private void sendJavascript(final String javascript) {
+       webView.getView().post(new Runnable() {
+           @Override
+           public void run() {
+               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                   webView.sendJavascript(javascript);
+               } else {
+                   webView.loadUrl("javascript:" + javascript);
+               }
+           }
+       });
+   }
 }
