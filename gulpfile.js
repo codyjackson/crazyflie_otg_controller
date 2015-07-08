@@ -9,7 +9,8 @@ var paths = {
     'webapp-build': 'ui/public',
     'webapp-build-javascripts': 'ui/assets/javascripts',
     'cordova': 'www',
-    'cordova-js': 'platforms/android/assets/www'
+    'cordova-js': 'platforms/android/assets/www',
+    'cordova-plugin-build': 'plugins'
 };
 
 function updateContentSrc(source) {
@@ -52,6 +53,8 @@ gulp.task('build-backend-impl', function(){
     var removeRadioResult = execSync('cordova plugin remove radio');
     console.log(removeRadioResult.stdout);
     console.error(removeRadioResult.stderr);
+    fs.removeSync(paths['cordova-plugin-build']);
+    fs.emptyDir(paths['cordova-plugin-build']);
 
     var addRadioResult = execSync('cordova plugin add ' + pluginPath);
     console.log(addRadioResult.stdout);
