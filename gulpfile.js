@@ -46,10 +46,8 @@ gulp.task('run-live-reload-server-impl', function(){
     console.log(mimosaBuildResults);
 });
 
-gulp.task('build-backend-impl', function(){
-    updateContentSrc('index.html');
+function buildBackend() {
     var pluginPath = process.cwd()+'\\radio';
-
     var removeRadioResult = execSync('cordova plugin remove radio');
     console.log(removeRadioResult.stdout);
     console.error(removeRadioResult.stderr);
@@ -63,6 +61,11 @@ gulp.task('build-backend-impl', function(){
     var buildResult = execSync('cordova build android');
     console.log(buildResult.stdout);
     console.error(buildResult.stderr);
+}
+
+gulp.task('build-backend-impl', function(){
+    updateContentSrc('index.html');
+    buildBackend();
 });
 
 function getHosts() {
@@ -87,11 +90,7 @@ gulp.task('build-backend-live-reload-impl', function(){
             choices: getHosts()
         }, function(res){
             updateContentSrc('http://' + res.host);
-
-            var pluginPath = process.cwd()+'\\radio';
-            console.log(execSync('cordova plugin remove radio'));
-            console.log(execSync('cordova plugin add ' + pluginPath));
-            console.log(execSync('cordova build android'));
+            buildBackend();
         }));
 });
 

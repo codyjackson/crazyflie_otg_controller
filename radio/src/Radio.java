@@ -76,6 +76,16 @@ public class Radio extends CordovaPlugin {
         _crazyradioUpdateThread = null;
     }
 
+    @Override
+    public Boolean shouldAllowRequest(String url) {
+        return true;
+    }
+
+    @Override
+    public Boolean shouldAllowNavigation(String url) {
+        return true;
+    }
+
     private float _pitch;
     private float _roll;
     private float _yawRate;
