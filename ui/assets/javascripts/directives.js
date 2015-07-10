@@ -133,7 +133,7 @@ angular.module('directives', [])
             },
             transclude: 'replace',
             link: function(scope, element, attributes) {
-                if(!(attributes.sideLength && attributes.color && scope.angle)) {
+                if(!(attributes.sideLength && attributes.color && attributes.angle)) {
                     throw 'The "sideLength", "color" and "angle" attributes must be defined.';
                 }
 
@@ -143,6 +143,9 @@ angular.module('directives', [])
                 };
 
                 function formatRotate(angle) {
+                    if(angular.isNumber(angle) && !isNaN(angle)) {
+                        throw 'Angle was not a number.';
+                    }
                     return 'rotate(' + angle + 'deg)';
                 }
 
