@@ -124,7 +124,7 @@ angular.module('directives', [])
             }
         };
     }])
-    .directive('yawIndicator', [function(){
+    .directive('yawIndicator', [function() {
         return {
             restrict: 'A',
             templateUrl: util.getTemplatePath('partial-views/yaw-indicator.html'),
@@ -154,8 +154,43 @@ angular.module('directives', [])
                     transform: formatRotate(scope.angle)
                 };
 
-                scope.$watch('angle', function(angle){
+                scope.$watch('angle', function(angle) {
                     scope.indicatorStyle.transform = formatRotate(angle);
+                });
+            }
+        };
+    }])
+    .directive('toggle', [function(){
+        return {
+            restrict: 'A',
+            scope: {
+                on: '&',
+                off: '&'
+            },
+            link: function(scope, element, attributes) {
+                var onClass = 'on';
+                var offClass = 'off';
+                            
+                var on = false;
+                element.addClass(offClass);
+
+                element.on('click', function() {
+                    on = !on;
+                    if(on) {
+                        element.removeClass(offClass);
+                        element.addClass(onClass);
+                        if(scope.on) {
+                            scope.on();
+                        }
+                    }
+
+                    if (!on) {
+                        element.removeClass(onClass);
+                        element.addClass(offClass);
+                        if(scope.off) {
+                            scope.off();
+                        }
+                    }
                 });
             }
         };

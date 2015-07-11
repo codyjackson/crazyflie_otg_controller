@@ -110,10 +110,47 @@ div[track] {
   }
 }
 
-#yaw-trackers {
-  position: relative;
+.spin {
+  position: absolute;
+  text-align: center;
+
+  font-size: 10em;
+  color: @primary-blue;
+
+  &.off {
+    animation-play-state: paused;
+  }
+
+  &.on {
+    animation-play-state: running;
+  }
+
+  &.off, &.on {
+    animation-name: rotate; 
+    animation-duration: 2s; 
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#yaw-trackers, .spin {
   height: 1050px;
   width: 1050px;
+  line-height: 1050px;
+}
+
+#yaw-trackers {
+  position: relative;
 
   .vertical-center-helper {
     position: absolute;
