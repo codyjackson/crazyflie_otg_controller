@@ -62,12 +62,21 @@ angular.module('controllers', [])
             $scope.copterYawDeviation = $scope.copterYaw - $rootScope.copter.frameOfReferenceYaw;
         });
 
+        var yawRate = 0;
+        $scope.turnRotateOn = function(){
+            yawRate = 100;
+        };
+
+        $scope.turnRotateOff = function(){
+            yawRate = 0;
+        };
+
         (function(){
             var intervalHandle = setInterval(function(){
                 var yawAggregateDeviation =  $scope.phoneYawDeviation - $scope.copterYawDeviation;
                 var targetCopterOrientation = $rootScope.phone.orientation.rotateYaw(yawAggregateDeviation);
 
-                radio.updateOrientation(targetCopterOrientation.pitch/2, targetCopterOrientation.roll/2, 0, $scope.thrustPercentage);
+                radio.updateOrientation(targetCopterOrientation.pitch/2, targetCopterOrientation.roll/2, yawRate, $scope.thrustPercentage);
             }, 100);
 
             $scope.$on("$destroy", function() {

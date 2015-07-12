@@ -8,7 +8,7 @@
     <div id="yaw-trackers">
         <div yaw-indicator side-length="94%" color="#E99104" angle="phoneYawDeviation"></div>
         <div yaw-indicator side-length="88%" color="#6B322C" angle="copterYawDeviation"></div>
-        <div class="spin" toggle><i class="fa fa-repeat"></i></div>
+        <div class="spin" toggle on="turnRotateOn()" off="turnRotateOff()"><i class="fa fa-repeat"></i></div>
     </div>
 </div>
 <div track="onNewThrust($percentage)">
